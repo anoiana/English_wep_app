@@ -15,22 +15,19 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "users") // Đặt tên bảng là "users" để tránh trùng từ khóa "user" của SQL
-@Getter // Tự động tạo tất cả các phương thức getter
-@Setter // Tự động tạo tất cả các phương thức setter
-@NoArgsConstructor // Tự động tạo constructor không tham số (bắt buộc cho JPA)
+@Table(name = "users")
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true) // Đảm bảo username không rỗng và là duy nhất
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false) // Đảm bảo password không rỗng
+    @Column(nullable = false)
     private String password;
 
-    // fetch = FetchType.LAZY là một best practice để cải thiện hiệu năng
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Folder> folders;
 

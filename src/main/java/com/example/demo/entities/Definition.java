@@ -21,7 +21,7 @@ public class Definition {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "meaning_id", nullable = false)
-    @JsonBackReference // Chống đệ quy khi serialize
+    @JsonBackReference 
     private Meaning meaning;
 
     public Long getId() {

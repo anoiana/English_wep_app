@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dto.GameDTO;
 import com.example.demo.entities.GameResult;
 import com.example.demo.repositories.GameResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,9 @@ public class GameResultController {
 
     @Autowired
     private GameResultRepository gameResultRepository;
-    public record GameResultUpdateDTO(int correctCount, int wrongCount, String wrongAnswers) {}
 
     @PutMapping("/{id}")
-    public ResponseEntity<GameResult> updateGameResult(@PathVariable Long id, @RequestBody GameResultUpdateDTO resultDTO) {
+    public ResponseEntity<GameResult> updateGameResult(@PathVariable Long id, @RequestBody GameDTO.GameResultUpdateDTO resultDTO) {
         GameResult existing = gameResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game result not found"));
         existing.setCorrectCount(resultDTO.correctCount());

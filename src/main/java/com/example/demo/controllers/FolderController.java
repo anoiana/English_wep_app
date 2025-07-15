@@ -6,6 +6,10 @@ import com.example.demo.entities.User;
 import com.example.demo.repositories.FolderRepository;
 import com.example.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,36 +28,38 @@ public class FolderController {
     @Autowired
     private UserRepository userRepository;
 
-    // 1. API Tạo Folder (POST) - Sử dụng DTO đã import
     @PostMapping
-    public ResponseEntity<FolderResponseDTO> createFolder(@RequestBody FolderCreationDTO folderDTO) { // Không cần thay đổi ở đây
+    public ResponseEntity<?> createFolder(@RequestBody FolderCreationDTO folderDTO) {
+        if (folderRepository.countByUserId(folderDTO.userId()) >= 100) {
+            return ResponseEntity.badRequest().body("Lỗi: Mỗi người dùng chỉ được tạo tối đa 100 thư mục.");
+        }
         User user = userRepository.findById(folderDTO.userId())
                 .orElseThrow(() -> new RuntimeException("Error: User not found with id " + folderDTO.userId()));
-
         Folder newFolder = new Folder();
         newFolder.setName(folderDTO.name());
         newFolder.setUser(user);
-
         Folder savedFolder = folderRepository.save(newFolder);
-
-        // Khi tạo mới, chưa có từ vựng nào nên count là 0
         FolderResponseDTO responseDTO = new FolderResponseDTO(
                 savedFolder.getId(),
                 savedFolder.getName(),
                 savedFolder.getUser().getId(),
-                0L // count là 0
+                0L
         );
-
         return ResponseEntity.ok(responseDTO);
     }
 
-    // 2. API Lấy Folders theo User (GET) - Sử dụng DTO đã import
     @GetMapping("/user/{userId}")
-    public List<FolderResponseDTO> getFoldersByUser(@PathVariable Long userId) { // Không cần thay đổi ở đây
-        return folderRepository.findFoldersWithVocabularyCountByUserId(userId);
+    public Page<FolderResponseDTO> getFoldersByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "") String search) { // Thêm param tìm kiếm
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return folderRepository.findWithSearchAndPagination(userId, search, pageable);
     }
 
-    // === 3. API Sửa tên Folder (PUT) - Sử dụng DTO đã import ===
+
+
     @PutMapping("/{folderId}")
     public ResponseEntity<FolderResponseDTO> updateFolder(
                                                            @PathVariable Long folderId,
@@ -78,7 +84,6 @@ public class FolderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // === 4. API Xóa Folder (DELETE) - Không cần thay đổi ===
     @DeleteMapping("/{folderId}")
     public ResponseEntity<String> deleteFolder(@PathVariable Long folderId) {
         if (!folderRepository.existsById(folderId)) {

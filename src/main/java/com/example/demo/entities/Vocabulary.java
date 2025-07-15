@@ -22,23 +22,19 @@ public class Vocabulary {
     private String audioUrl;
 
     @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference // Phía "cha" của mối quan hệ
+    @JsonManagedReference
     private List<Meaning> meanings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", nullable = false)
-    @JsonBackReference // Chống đệ quy với Folder
+    @JsonBackReference
     private Folder folder;
 
-    // Nghĩa tiếng Việt hoặc nghĩa tùy chỉnh
     @Column(columnDefinition = "TEXT")
     private String userDefinedMeaning;
 
-    // Link ảnh minh họa do người dùng cung cấp
-    @Column(columnDefinition = "LONGTEXT") // Dùng LONGTEXT để lưu chuỗi Base64 rất dài
+    @Column(columnDefinition = "LONGTEXT")
     private String userImageBase64;
-
-
 
     public Long getId() {
         return id;
